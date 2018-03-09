@@ -1,47 +1,39 @@
 const express = require('express');
 const router = express.Router();
-const mongo = require('mongodb');
-const mongoUrl = 'mongodb://localhost:27017'
+const mongo = require('mongodb').MongoClient;
+const mongoUrl = 'mongodb://localhost:27017/bookingdb';
 
-router.get('/', function(request, response, next){
-  console.log(request.params);
-  response.status(200).json({
-    message: 'GET requests to /products'
-  });
-});
+router.get('/getData', function(request, response, next){
 
-router.post('/', function(request, response, next){
-  console.log(request.body.navn);
-  response.status(201).json({
-    message: 'POST requests to /products'
-  });
-});
+  var resultArray = [];
 
-router.get('/:productId', function(request, response, next){
-  const id = request.params.productId;
-  if(id === 'special'){
-    response.status(200).json({
-      message: 'You discovered the special ID',
-      id: id
+  console.log('HEHEHEHE');
+  mongo.connect(mongoUrl, function(error, database){
+    const cursor = database.collection('rooms').find().pretty();
+    cursor.forEach(function(data, error){
+      resultArray.push(data);
+      console.log('JOOOODA');
+    },
+    function(){
+      database.close();
+      response.json({cursor});
+      console.log('HOHOHOHOHO');
     });
-  } else{
-    response.status(200).json({
-      message: 'You passed an ID'
+  });
+});
+
+router.post('/insertData', function(request, response, next){
+
+  mongo.connect(mongoUrl, function(error, database){
+
+    database.collection('reservations').insertOne(request.body, function(error, result){
+      if (error){
+       console.log(error);
+     }else{
+      console.log(error);
+    }
     });
-  }
-});
-
-router.patch('/:productId', function(request, response, next){
-  response.status(200).json({
-    message: 'Updated product!'
   });
 });
-
-router.delete('/:productId', function(request, response, next){
-  response.status(200).json({
-    message: 'Deleted product!'
-  });
-});
-
 
 module.exports = router;
