@@ -1,37 +1,41 @@
 const express = require('express');
 const router = express.Router();
 const mongo = require('mongodb').MongoClient;
-const mongoUrl = 'mongodb://localhost:27017/bookingdb';
+const mongoUrl = 'mongodb://localhost:27017';
+
 
 router.get('/getData', function(request, response, next){
 
   var resultArray = [];
 
-  console.log('HEHEHEHE');
   mongo.connect(mongoUrl, function(error, database){
-    const cursor = database.collection('rooms').find().pretty();
-    cursor.forEach(function(data, error){
-      resultArray.push(data);
-      console.log('JOOOODA');
-    },
-    function(){
-      database.close();
-      response.json({cursor});
-      console.log('HOHOHOHOHO');
-    });
+    var outPut = database.db('bookingdb').collection('rooms').find();
+    outPut.toArray(function(err, students) {
+              // so now, we can return all students to the screen.
+              response.status(200).json({'rooms' : students});
+           });
+
+           database.close();
+
   });
+
 });
 
 router.post('/insertData', function(request, response, next){
 
-  mongo.connect(mongoUrl, function(error, database){
+  const inputData = {
+    name: request.body.name,
+    room: request.body.room
+  };
 
-    database.collection('reservations').insertOne(request.body, function(error, result){
+  mongo.connect(mongoUrl, function(error, database){
+    database.db('bookingdb').collection('reservations').insertOne(inputData, function(error, result){
       if (error){
-       console.log(error);
+       console.log('hahahaha');
      }else{
-      console.log(error);
+      console.log('hohohohho');
     }
+    database.close();
     });
   });
 });
