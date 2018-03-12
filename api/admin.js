@@ -12,8 +12,13 @@ router.get('/getReservations', function(request, response, next){
   mongoClient.connect(mongoUrl, function(error, database){
     const outPut = database.db('bookingdb').collection('reservations').find();
 
-    outPut.toArray(function(err, data) {
-      response.json({'reservations' : data});
+    outPut.toArray(function(error, data) {
+      if(error){
+        response.status(500).json(error);
+      }
+      else{
+        response.status(200).json({'reservations' : data});
+      }
     });
 
     database.close();
@@ -25,8 +30,13 @@ router.get('/getRooms', function(request, response, next){
   mongoClient.connect(mongoUrl, function(error, database){
     const outPut = database.db('bookingdb').collection('rooms').find();
 
-    outPut.toArray(function(err, data) {
-      response.json({'rooms' : data});
+    outPut.toArray(function(error, data) {
+      if(error){
+        response.status(500).json(error);
+      }
+      else{
+        response.status(200).json({'rooms' : data});
+      }
     });
 
     database.close();
@@ -43,7 +53,7 @@ router.post('/insertReservation', function(request, response, next){
   mongoClient.connect(mongoUrl, function(error, database){
     database.db('bookingdb').collection('reservations').insertOne(inputData, function(error, result){
       if(error){
-        response.json(error);
+        response.status(500).json(error);
       }
       else{
         response.status(200).json({message: 'Record inserted'});
@@ -63,7 +73,7 @@ router.post('/insertRoom', function(request, response, next){
   mongoClient.connect(mongoUrl, function(error, database){
     database.db('bookingdb').collection('rooms').insertOne(inputData, function(error, result){
       if(error){
-        response.json(error);
+        response.status(500).json(error);
       }
       else{
         response.status(200).json({message: 'Record inserted'});
@@ -73,59 +83,68 @@ router.post('/insertRoom', function(request, response, next){
   });
 });
 
-// Slett reservasjon uten å sende URL input
-/*router.delete('/deleteReservation', function(request, response, next){
-  const resId = {_id: new mongodb.ObjectID(request.body.id)};
+// Deletes one or more records in reserverations collection
+router.delete('/deleteReservation', function(request, response, next){
+
+  var arrId = [];
+  var inputArray = request.body._id;
+
+  if(Array.isArray(inputArray)){
+    for(var i = 0; i < inputArray.length; i++){
+      arrId[i] = mongodb.ObjectID(inputArray[i]);
+    }
+  }
+  else{
+    arrId[0] = mongodb.ObjectID(inputArray);
+  }
 
   mongoClient.connect(mongoUrl, function(error, database){
-    database.db('bookingdb').collection('reservations').deleteOne(resId, function(error, result){
-      if(error){
-        response.json(error);
-      }
-      else{
-        response.status(200).json({message: 'Record deleted'});
-      }
-      database.close();
-    });
-  });
+      database.db('bookingdb').collection('reservations').deleteMany({_id: {$in: arrId}}, function(error, result){
+        if(error){
+          response.status(500).json(error);
+        }
+        else{
+          response.status(200).json({message: 'Record deleted'});
 
-});*/
-
-// Delete a record in reservations collection
-router.delete('/deleteReservation/:reservationId', function(request, response, next){
-  const resId = {_id: new mongodb.ObjectID(request.params.reservationId)};
-
-  mongoClient.connect(mongoUrl, function(error, database){
-    database.db('bookingdb').collection('reservations').deleteOne(resId, function(error, result){
-      if(error){
-        response.json(error);
-      }
-      else{
-        response.status(200).json({message: 'Record deleted'});
-      }
-      database.close();
-    });
+        }
+        database.close();
+      });
   });
 
 });
 
-// Delete a record in rooms collection
-router.delete('/deleteRoom/:roomId', function(request, response, next){
-  const roomId = {_id: new mongodb.ObjectID(request.params.roomId)};
+// Deletes one or more records in rooms collection
+router.delete('/deleteRooms', function(request, response, next){
+
+  var arrId = [];
+  var inputArray = request.body._id;
+
+  if(Array.isArray(inputArray)){
+    for(var i = 0; i < inputArray.length; i++){
+      arrId[i] = mongodb.ObjectID(inputArray[i]);
+    }
+  }
+  else{
+    arrId[0] = mongodb.ObjectID(inputArray);
+  }
 
   mongoClient.connect(mongoUrl, function(error, database){
-    database.db('bookingdb').collection('rooms').deleteOne(roomId, function(error, result){
-      if(error){
-        response.json(error);
-      }
-      else{
-        response.status(200).json({message: 'Record deleted'});
-      }
-      database.close();
-    });
+      database.db('bookingdb').collection('rooms').deleteMany({_id: {$in: arrId}}, function(error, result){
+        if(error){
+          response.status(500).json(error);
+        }
+        else{
+          response.status(200).json({message: 'Record deleted'});
+
+        }
+        database.close();
+      });
   });
 
 });
+
+
+
 
 // Update a record in reservations collection
 router.patch('/updateReservation/:reservationId', function(request, response, next){
@@ -135,7 +154,7 @@ router.patch('/updateReservation/:reservationId', function(request, response, ne
   mongoClient.connect(mongoUrl, function(error, database){
     database.db('bookingdb').collection('reservations').updateOne(resId, updateObj, function(error, result){
       if (error){
-        response.json(error);
+        response.status(500).json(error);
       }
       else{
         response.status(200).json({message: 'Record update'});
@@ -154,7 +173,7 @@ router.patch('/updateRooms/:roomId', function(request, response, next){
   mongoClient.connect(mongoUrl, function(error, database){
     database.db('bookingdb').collection('rooms').updateOne(resId, updateObj, function(error, result){
       if (error){
-        response.json(error);
+        response.status(500).json(error);
       }
       else{
         response.status(200).json({message: 'Record update'});
