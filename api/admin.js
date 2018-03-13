@@ -7,6 +7,7 @@ const mongodb = require('mongodb');
 // Url to database
 const mongoUrl = 'mongodb://localhost:27017';
 
+
 // Read all records in reservations collection
 router.get('/getReservations', function(request, response, next){
   mongoClient.connect(mongoUrl, function(error, database){
@@ -143,12 +144,9 @@ router.delete('/deleteRooms', function(request, response, next){
 
 });
 
-
-
-
 // Update a record in reservations collection
 router.patch('/updateReservation/:reservationId', function(request, response, next){
-  const resId = {_id: new mongodb.ObjectID(request.params.reservationId)};
+  const resId = {_id: mongodb.ObjectID(request.params.reservationId)};
   const updateObj = {$set: request.body};
 
   mongoClient.connect(mongoUrl, function(error, database){
@@ -167,11 +165,11 @@ router.patch('/updateReservation/:reservationId', function(request, response, ne
 
 // Update a record in rooms collection
 router.patch('/updateRooms/:roomId', function(request, response, next){
-  const roomId = {_id: new mongodb.ObjectID(request.params.roomId)};
+  const roomId = {_id: mongodb.ObjectID(request.params.roomId)};
   const updateObj = {$set: request.body};
 
   mongoClient.connect(mongoUrl, function(error, database){
-    database.db('bookingdb').collection('rooms').updateOne(resId, updateObj, function(error, result){
+    database.db('bookingdb').collection('rooms').updateOne(roomId, updateObj, function(error, result){
       if (error){
         response.status(500).json(error);
       }
