@@ -7,7 +7,6 @@ const mongodb = require('mongodb');
 // Url to database
 const mongoUrl = 'mongodb://localhost:27017';
 
-
 // Read all records in reservations collection
 router.get('/getReservations', function(request, response, next){
   mongoClient.connect(mongoUrl, function(error, database){
